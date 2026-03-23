@@ -3,6 +3,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
   const { keyword } = req.body;
+  const prompt = 'Analyze the keyword: "' + keyword + '". Return only valid JSON with these fields: volume (number), difficulty (number 1-100), cpc (string like "$2.40"), intent (one of: Informational, Commercial, Transactional), related_keywords (array of 5 strings), top_insights (array of 3 strings), recommendations (array of 3 strings)';
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -14,16 +15,8 @@ export default async function handler(req, res) {
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1000,
-      system: 'You are a keyword research agent. Return only valid JSON, no markdown.',
-      messages: [{
-        role: 'user',
-        content: `Analyze the keyword: "${keyword}". Return JSON with these fields:
-          volume (number), difficulty (1-100), cpc (string e.g. "$2.40"),
-          intent ("Informational" or "Commercial" or "Transactional"),
-          related_keywords (array of 5 strings),
-          top_insights (array of 3 short insight strings),
-          recommendations (array of 3 short action strings)`
-      }]
+      system: 'You are a keyword research agent. Return only valid JSON. No markdown, no backticks, no explanation.',
+      messages: [{ role: 'user', content: prompt }]
     })
   });
 
